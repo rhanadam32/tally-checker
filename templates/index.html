@@ -57,10 +57,11 @@
         <main class="max-w-4xl mx-auto py-12 px-6">
             <div class="text-center mb-10">
                 <h1 class="text-3xl font-bold tracking-tight mb-2">
-                    Pencarian Data
+                    Tally Checker
                 </h1>
                 <p class="text-slate-500">
-                    Cari informasi secara cepat dari database excel kami.
+                    Tools yang dapat mencari keselisihan data antara tally
+                    manual dan tally program di sim BeeJay.
                 </p>
             </div>
 
@@ -115,6 +116,7 @@
                             <tr>
                                 <th class="px-6 py-3">ID</th>
                                 <th class="px-6 py-3">Produk & Target Qty</th>
+                                <th class="px-6 py-3">Stok Master</th>
                                 <th class="px-6 py-3">Tally-In (Input)</th>
                                 <th class="px-6 py-3">Selisih</th>
                             </tr>
@@ -130,9 +132,22 @@
                                 <td class="px-6 py-4 text-slate-600">
                                     {{.Name}}
                                 </td>
+                                <td
+                                    class="px-6 py-4 text-slate-500 font-medium"
+                                >
+                                    {{.Stock}}
+                                </td>
                                 <td class="px-6 py-4 text-slate-500">
-                                    <form action="/update" method="POST" class="flex gap-2">
-                                        <input type="hidden" name="id" value="{{.ID}}">
+                                    <form
+                                        action="/update"
+                                        method="POST"
+                                        class="flex gap-2"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="id"
+                                            value="{{.ID}}"
+                                        />
                                         <input
                                             type="number"
                                             name="tallyin"
@@ -140,12 +155,17 @@
                                             value="{{.TallyIn}}"
                                             placeholder="0"
                                         />
-                                        <button type="submit" class="shadcn-button bg-slate-900 text-white px-3 py-1 rounded-md text-xs font-medium">
+                                        <button
+                                            type="submit"
+                                            class="shadcn-button bg-slate-900 text-white px-3 py-1 rounded-md text-xs font-medium"
+                                        >
                                             Simpan
                                         </button>
                                     </form>
                                 </td>
-                                <td class="px-6 py-4 text-slate-500 font-semibold">
+                                <td
+                                    class="px-6 py-4 text-slate-500 font-semibold"
+                                >
                                     {{.Diff}}
                                 </td>
                             </tr>
@@ -169,5 +189,59 @@
             </div>
             {{end}}
         </main>
+        <div
+            id="toast"
+            class="fixed bottom-5 right-5 hidden bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-bounce"
+        >
+            ✅ Data berhasil disimpan!
+        </div>
+
+        <script>
+            document
+                .querySelectorAll('form[action="/update"]')
+                .forEach((form) => {
+                    form.onsubmit = async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(form);
+                        const submitBtn = form.querySelector("button");
+                        const originalBtnText = submitBtn.innerText;
+
+                        submitBtn.disabled = true;
+                        submitBtn.innerText = "...";
+
+                        try {
+                            const response = await fetch("/update", {
+                                method: "POST",
+                                body: formData,
+                            });
+                            const result = await response.json();
+
+                            if (result.status === "success") {
+                                // Update angka selisih secara dinamis di kolom sebelah kanan
+                                const row = form.closest("tr");
+                                const diffCell = row.cells[4]; // Kolom ke-5 (index 4) adalah Selisih
+                                diffCell.innerText = result.diff;
+                                diffCell.classList.add(
+                                    "text-green-600",
+                                    "scale-110",
+                                );
+
+                                // Tampilkan Notifikasi
+                                const toast = document.getElementById("toast");
+                                toast.classList.remove("hidden");
+                                setTimeout(
+                                    () => toast.classList.add("hidden"),
+                                    3000,
+                                );
+                            }
+                        } catch (error) {
+                            alert("Terjadi kesalahan saat menyimpan data");
+                        } finally {
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = originalBtnText;
+                        }
+                    };
+                });
+        </script>
     </body>
 </html>
