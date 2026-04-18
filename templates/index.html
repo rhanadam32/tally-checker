@@ -1,70 +1,173 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tally Checker - Excel DB</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; }
-        .navbar { background-color: #0d6efd; }
-        .search-container { margin-top: 50px; }
-    </style>
-</head>
-<body class="bg-light">
-
-    <nav class="navbar navbar-dark shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="/">📊 Tally Checker</a>
-        </div>
-    </nav>
-
-    <div class="container search-container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4">
-                        <h3 class="text-center mb-4">Cek Data Excel</h3>
-                        <form action="/search" method="GET" class="d-flex gap-2">
-                            <input type="text" name="q" class="form-control form-control-lg" placeholder="Masukkan kata kunci pencarian..." value="{{.Query}}" required>
-                            <button type="submit" class="btn btn-primary btn-lg px-4">Cari</button>
-                        </form>
-                    </div>
-                </div>
-
-                {{if .Results}}
-                <div class="mt-5">
-                    <h4 class="mb-3">Hasil Pencarian:</h4>
-                    <div class="table-responsive card shadow-sm border-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nama</th>
-                                    <th>Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{range .Results}}
-                                <tr>
-                                    <td>{{.ID}}</td>
-                                    <td>{{.Name}}</td>
-                                    <td>{{.Info}}</td>
-                                </tr>
-                                {{end}}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                {{else if .Query}}
-                <div class="alert alert-warning mt-4 text-center">
-                    Data tidak ditemukan untuk kata kunci "<strong>{{.Query}}</strong>".
-                </div>
-                {{end}}
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tally Checker - Modern DB</title>
+        <!-- Tailwind CSS for Shadcn-like styling -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+            }
+            .shadcn-input {
+                border: 1px solid #e4e4e7;
+                transition:
+                    border-color 0.2s,
+                    ring 0.2s;
+            }
+            .shadcn-input:focus {
+                outline: none;
+                border-color: #000;
+                ring: 2px solid #000;
+            }
+            .shadcn-button {
+                transition: background-color 0.2s;
+            }
+            .shadcn-button:hover {
+                opacity: 0.9;
+            }
+            .shadcn-card {
+                border: 1px solid #e4e4e7;
+                background-color: #fff;
+            }
+            .shadcn-table-header {
+                background-color: #f9fafb;
+                border-bottom: 1px solid #e4e4e7;
+            }
+        </style>
+    </head>
+    <body class="bg-slate-50 text-slate-950 min-h-screen">
+        <!-- Navbar -->
+        <nav
+            class="border-b border-slate-200 bg-white px-6 py-3 flex items-center justify-between"
+        >
+            <div class="flex items-center gap-2">
+                <span class="text-xl font-bold tracking-tight"
+                    >📊 Tally Checker</span
+                >
             </div>
-        </div>
-    </div>
+            <div class="text-sm text-slate-500">Excel Database System</div>
+        </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+        <main class="max-w-4xl mx-auto py-12 px-6">
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold tracking-tight mb-2">
+                    Pencarian Data
+                </h1>
+                <p class="text-slate-500">
+                    Cari informasi secara cepat dari database excel kami.
+                </p>
+            </div>
+
+            <!-- Search Section (Shadcn Card style) -->
+            <div class="shadcn-card rounded-xl p-6 shadow-sm mb-8">
+                <form action="/search" method="GET" class="flex gap-3">
+                    <div class="relative flex-1">
+                        <input
+                            type="text"
+                            name="q"
+                            class="shadcn-input w-full px-4 py-2 rounded-md text-sm"
+                            placeholder="Cari berdasarkan ID, Nama, atau Info..."
+                            value="{{.Query}}"
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        class="shadcn-button bg-slate-900 text-white px-5 py-2 rounded-md text-sm font-medium"
+                    >
+                        Cari Data
+                    </button>
+                    <button
+                        type="submit"
+                        class="shadcn-button bg-slate-200 text-slate-900 px-5 py-2 rounded-md text-sm font-medium hover:bg-slate-300"
+                        onclick="this.form.q.value = ''"
+                    >
+                        Munculkan Data
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            {{if .Results}}
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold tracking-tight">
+                        Hasil Pencarian
+                    </h2>
+                    <span
+                        class="text-xs font-medium px-2 py-1 bg-slate-200 rounded-full text-slate-600"
+                    >
+                        {{len .Results}} ditemukan
+                    </span>
+                </div>
+
+                <div class="shadcn-card rounded-xl overflow-hidden shadow-sm">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead
+                            class="shadcn-table-header text-slate-500 font-medium"
+                        >
+                            <tr>
+                                <th class="px-6 py-3">ID</th>
+                                <th class="px-6 py-3">Produk & Target Qty</th>
+                                <th class="px-6 py-3">Tally-In (Input)</th>
+                                <th class="px-6 py-3">Selisih</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {{range .Results}}
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td
+                                    class="px-6 py-4 font-medium text-slate-900"
+                                >
+                                    {{.ID}}
+                                </td>
+                                <td class="px-6 py-4 text-slate-600">
+                                    {{.Name}}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">
+                                    <form action="/update" method="POST" class="flex gap-2">
+                                        <input type="hidden" name="id" value="{{.ID}}">
+                                        <input
+                                            type="number"
+                                            name="tallyin"
+                                            class="shadcn-input w-full px-3 py-1 rounded-md text-sm"
+                                            value="{{.TallyIn}}"
+                                            placeholder="0"
+                                        />
+                                        <button type="submit" class="shadcn-button bg-slate-900 text-white px-3 py-1 rounded-md text-xs font-medium">
+                                            Simpan
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="px-6 py-4 text-slate-500 font-semibold">
+                                    {{.Diff}}
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{else if .Query}}
+            <div class="text-center py-12">
+                <div
+                    class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-3"
+                >
+                    🔍
+                </div>
+                <h3 class="text-lg font-medium">Data tidak ditemukan</h3>
+                <p class="text-slate-500 text-sm">
+                    Kata kunci "<span class="font-semibold">{{.Query}}</span>"
+                    tidak cocok dengan data apapun.
+                </p>
+            </div>
+            {{end}}
+        </main>
+    </body>
 </html>
