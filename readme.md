@@ -1,73 +1,92 @@
 # 📊 Tally Checker - Excel Database System
 
-Aplikasi berbasis web sederhana menggunakan bahasa pemrograman Go (Golang) untuk melakukan pengecekan data, input tally-in, dan perhitungan selisih otomatis menggunakan file Excel sebagai database.
+  Aplikasi berbasis web sederhana menggunakan bahasa pemrograman Go (Golang) untuk melakukan
+  pengecekan data, input tally-in, dan perhitungan selisih otomatis menggunakan file Excel
+  sebagai database.
 
-## 🚀 Fitur
-- **Pencarian Data**: Cari data berdasarkan ID, Nama, atau Keterangan.
-- **Munculkan Semua Data**: Menampilkan seluruh isi database excel saat pertama kali dibuka.
-- **Input Tally-In**: Menginput data secara langsung dari web ke dalam file Excel.
-- **Kalkulasi Otomatis**: Menghitung selisih antara jumlah target dan jumlah tally-in secara otomatis.
-- **Desain Modern**: Menggunakan Tailwind CSS dengan estetika minimalis ala Shadcn UI.
+  ## 🚀 Fitur Utama
+  - **Pencarian Data Dinamis**: Cari data berdasarkan ID, Nama, atau Keterangan dengan respon
+  cepat.
+  - **Dashboard Master Data**: Menampilkan seluruh data master dari Excel secara otomatis saat
+  aplikasi dibuka.
+  - **Input Tally-In Real-time**: Menginput data tally-in langsung dari web ke file Excel tanpa
+  reload halaman (AJAX).
+  - **Kalkulasi Selisih Otomatis**: Menghitung selisih antara jumlah Tally-In dan Stok Master
+  secara otomatis dengan rumus: `Tally-In - Stok Master`.
+  - **Ekstraksi Stok Pintar**: Mampu membaca jumlah target dari format teks seperti `"Produk A =
+   100 mc"` secara otomatis.
+  - **UI Modern (Shadcn-like)**: Antarmuka minimalis dan profesional menggunakan Tailwind CSS
+  dengan notifikasi toast.
 
-## 🛠️ Prasyarat
-Sebelum menjalankan program, pastikan Anda sudah menginstal:
-- [Go (Golang)](https://go.dev/dl/) (Versi terbaru direkomendasikan)
-- File Excel bernama `database.xlsx` (lihat bagian struktur database)
+  ## 🛠️ Prasyarat
+  Sebelum menjalankan program, pastikan Anda sudah menginstal:
+  - [Go (Golang)](https://go.dev/dl/) (Versi terbaru direkomendasikan)
+  - File Excel bernama `database.xlsx`
 
-## 📂 Struktur Database Excel
-Pastikan file `database.xlsx` memiliki satu sheet bernama **`Sheet1`** dengan struktur kolom sebagai berikut:
+  ## 📂 Struktur Database Excel
+  Pastikan file `database.xlsx` memiliki satu sheet bernama **`Sheet1`** dengan struktur kolom
+  sebagai berikut:
 
-| Kolom A (ID) | Kolom B (Target Qty) | Kolom C (Tally-In) | Kolom D (Selisih) |
-| :--- | :--- | :--- | :--- |
-| ID-001 | 100 | (Kosongkan) | (Otomatis) |
-| ID-002 | 50 | (Kosongkan) | (Otomatis) |
+  | Kolom A (ID) | Kolom B (Produk & Target Qty) | Kolom C (Tally-In) | Kolom D (Selisih) |
+  | :--- | :--- | :--- | :--- |
+  | ID-001 | Produk A = 100 mc | (Kosongkan) | (Otomatis) |
+  | ID-002 | Produk B = 50 mc | (Kosongkan) | (Otomatis) |
 
-*Catatan: Baris pertama harus berupa header.*
+  *Catatan: Baris pertama harus berupa header. Format di Kolom B harus mengandung tanda `=` agar
+   angka stok dapat diekstrak.*
 
-## 🏁 Langkah-Langkah Menjalankan
+  ## 🏁 Langkah-Langkah Menjalankan
 
-### 1. Persiapkan Folder Proyek
-Ekstrak atau buat struktur folder seperti berikut:
-```text
-.
-├── main.go
-├── database.xlsx
-└── templates/
-    └── index.html
-```
-setelah itu perlu isi data terlebih dahulu
-1. buka file database.xlsx 
-2. copy laporan produksi dari whatsapp, kemudian paste di Sheet1 kolom B
-3. setelah itu save dan tutup file database.xlsx
+  ### 1. Persiapkan Folder Proyek
+  Pastikan struktur folder Anda seperti berikut:
+  ```text
+  .
+  ├── main.go
+  ├── database.xlsx
+  └── templates/
+      └── index.html
 
+  2. Inisialisasi Modul Go
 
-### 2. Inisialisasi Modul Go
-Buka terminal/command prompt di folder proyek, lalu jalankan perintah berikut:
-```bash
-go mod init tally-checker
-```
+  Buka terminal di folder proyek, lalu jalankan:
+  go mod init tally-checker
 
-### 3. Install Library Excelize
-Program ini menggunakan library `excelize` untuk mengelola file Excel. Install dengan perintah:
-```bash
-go get github.com/xuri/excelize/v2
-```
+  3. Install Library Excelize
 
-### 4. Jalankan Aplikasi
-Jalankan program dengan perintah:
-```bash
-go run main.go
-```
+  Install library untuk manajemen file Excel:
+  go get github.com/xuri/excelize/v2
 
-### 5. Akses Aplikasi
-Buka browser favorit Anda dan akses alamat berikut:
-👉 **`http://localhost:8080`**
+  4. Jalankan Aplikasi
 
-## 📖 Cara Penggunaan
-1. **Melihat Semua Data**: Cukup buka halaman utama, semua data dari Excel akan muncul.
-2. **Mencari Data**: Ketik kata kunci pada kolom pencarian dan klik tombol **"Cari Data"**.
-3. **Input Tally**: 
-   - Masukkan angka pada kolom **Tally-In (Input)** di baris data yang diinginkan.
-   - Klik tombol **"Simpan"**.
-   - Program akan otomatis menyimpan angka tersebut ke Excel dan menghitung selisihnya.
-4. **Reset Tampilan**: Klik tombol **"Munculkan Data"** untuk kembali menampilkan seluruh data tanpa filter pencarian.
+  Jalankan program dengan perintah:
+  go run main.go
+
+  5. Akses Aplikasi
+
+  Buka browser dan akses alamat berikut:
+  👉 http://localhost:8080
+
+  📖 Cara Penggunaan
+
+  1. Melihat Data: Saat dibuka, aplikasi akan langsung menampilkan seluruh daftar data master.
+  2. Pencarian: Gunakan Panel Pencarian untuk memfilter data. Klik "Reset" untuk menampilkan
+  kembali semua data.
+  3. Input & Update:
+    - Masukkan angka pada kolom Tally-In (Input).
+    - Klik tombol "Simpan".
+    - Sistem akan secara otomatis:
+        - Menyimpan angka ke Kolom C di Excel.
+      - Menghitung selisih (Tally-In dikurangi Stok Master).
+      - Menyimpan hasil selisih ke Kolom D di Excel.
+      - Memperbarui angka selisih di layar secara instan tanpa refresh halaman.
+  4. Notifikasi: Perhatikan pojok kanan bawah untuk konfirmasi "Data berhasil disimpan!".
+
+  📝 Log Pembaruan (Review)
+
+  - v1.0: Implementasi dasar pembacaan Excel dan tampilan Bootstrap.
+  - v1.1: Migrasi desain ke Tailwind CSS (Shadcn UI style) untuk tampilan lebih modern.
+  - v1.2: Penambahan fitur "Munculkan Semua Data" dan perbaikan navigasi.
+  - v1.3: Penambahan fitur "Stok Master" (ekstraksi angka otomatis dari teks kolom B).
+  - v1.4: Implementasi Update AJAX (Simpan tanpa refresh), Notifikasi Toast, dan sinkronisasi
+  kalkulasi selisih Tally-In - Stok Master.
+  - v1.5: Perbaikan bug undefined: finalDiff dan optimasi redirect halaman.
