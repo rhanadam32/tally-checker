@@ -35,6 +35,11 @@ Ekstrak atau buat struktur folder seperti berikut:
 └── templates/
     └── index.html
 ```
+setelah itu perlu isi data terlebih dahulu
+1. buka file database.xlsx 
+2. copy laporan produksi dari whatsapp, kemudian paste di Sheet1 kolom B
+3. setelah itu save dan tutup file database.xlsx
+
 
 ### 2. Inisialisasi Modul Go
 Buka terminal/command prompt di folder proyek, lalu jalankan perintah berikut:
