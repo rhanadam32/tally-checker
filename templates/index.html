@@ -115,6 +115,7 @@
                             <tr>
                                 <th class="px-6 py-3">ID</th>
                                 <th class="px-6 py-3">Produk & Target Qty</th>
+                                <th class="px-6 py-3">Stok Master</th>
                                 <th class="px-6 py-3">Tally-In (Input)</th>
                                 <th class="px-6 py-3">Selisih</th>
                             </tr>
@@ -129,6 +130,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-slate-600">
                                     {{.Name}}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500 font-medium">
+                                    {{.Stock}}
                                 </td>
                                 <td class="px-6 py-4 text-slate-500">
                                     <form action="/update" method="POST" class="flex gap-2">
