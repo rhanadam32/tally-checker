@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -10,7 +14,8 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-// Data represents a row of data from the excel file
+const GOOGLE_VISION_API_KEY = "GOOGLE_VISION_API_KEY"
+
 type Data struct {
 	ID      string
 	Name    string
@@ -19,7 +24,6 @@ type Data struct {
 	Diff    string
 }
 
-// PageData is passed to the HTML template
 type PageData struct {
 	Results []Data
 	Query   string
@@ -30,6 +34,7 @@ func main() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/search", searchHandler)
 	http.HandleFunc("/update", updateHandler) // Handler untuk input data tally
+	http.HandleFunc("/upload", uploadHandler)
 
 	fmt.Println("Server started at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -218,4 +223,83 @@ func searchExcel(query string) ([]Data, error) {
 	}
 
 	return results, nil
+}
+
+// Handler baru untuk memproses OCR
+func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	file, _, err := r.FormFile("image")
+	if err != nil {
+		fmt.Println("DEBUG: Gagal upload gambar:", err)
+		http.Error(w, "Gagal upload gambar", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	buf := new(bytes.Buffer)
+	io.Copy(buf, file)
+	imgBase64 := base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	requestBody := map[string]interface{}{
+		"requests": []map[string]interface{}{
+			{
+				"image":    map[string]interface{}{"content": imgBase64},
+				"features": []map[string]interface{}{{"type": "TEXT_DETECTION"}},
+			},
+		},
+	}
+
+	jsonReq, _ := json.Marshal(requestBody)
+	apiUrl := fmt.Sprintf("https://vision.googleapis.com/v1/images:annotate?key=%s", GOOGLE_VISION_API_KEY)
+
+	fmt.Println("DEBUG: Mengirim request ke Google Vision API...")
+	resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonReq))
+	if err != nil {
+		fmt.Println("DEBUG: Error HTTP Post:", err)
+		http.Error(w, "Gagal menghubungi Google API", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Baca body respon mentah untuk debugging
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	fmt.Println("DEBUG: Respon dari Google:", string(bodyBytes))
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("DEBUG: Google API mengembalikan error status: %d\n", resp.StatusCode)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"status":"error", "message": "Google API Error %d"}`, resp.StatusCode)
+		return
+	}
+
+	var googleResp struct {
+		Responses []struct {
+			FullTextAnnotation struct {
+				Text string `json:"text"`
+			} `json:"fullTextAnnotation"`
+		} `json:"responses"`
+	}
+
+	if err := json.Unmarshal(bodyBytes, &googleResp); err != nil {
+		fmt.Println("DEBUG: Gagal parse JSON respon:", err)
+		http.Error(w, "Gagal parse respon Google", http.StatusInternalServerError)
+		return
+	}
+
+	text := ""
+	if len(googleResp.Responses) > 0 {
+		text = googleResp.Responses[0].FullTextAnnotation.Text
+	}
+	fmt.Printf("DEBUG: Teks terdeteksi: %s\n", text)
+
+	w.Header().Set("Content-Type", "application/json")
+	responseJSON, _ := json.Marshal(map[string]interface{}{
+		"status": "success",
+		"text":   text,
+	})
+	w.Write(responseJSON)
 }
