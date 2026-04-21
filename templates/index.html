@@ -79,7 +79,65 @@
                     manual dan tally program di sim BeeJay.
                 </p>
             </div>
+            <div
+                class="shadcn-card rounded-xl p-6 shadow-sm mb-12 border-l-4 border-l-indigo-500"
+            >
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="p-2 bg-indigo-100 rounded-lg">
+                        <span class="text-xl">📷</span>
+                    </div>
+                    <h2 class="text-lg font-semibold tracking-tight">
+                        OCR Scanner (Scan Gambar)
+                    </h2>
+                </div>
 
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-1">
+                        <label
+                            class="block text-sm font-medium text-slate-700 mb-2"
+                            >Upload Gambar Produk/Tally</label
+                        >
+                        <div class="flex gap-2">
+                            <input
+                                type="file"
+                                id="ocrInput"
+                                class="hidden"
+                                accept="image/*"
+                                onchange="handleOCRUpload()"
+                            />
+                            <button
+                                onclick="
+                                    document.getElementById('ocrInput').click()
+                                "
+                                class="shadcn-button bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 flex items-center gap-2"
+                            >
+                                <span>📁</span> Pilih Gambar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1">
+                        <label
+                            class="block text-sm font-medium text-slate-700 mb-2"
+                            >Hasil Deteksi Teks</label
+                        >
+                        <div class="relative">
+                            <textarea
+                                id="ocrResult"
+                                readonly
+                                class="shadcn-input w-full px-4 py-2 rounded-md text-sm h-10 bg-slate-50"
+                                placeholder="Teks hasil scan akan muncul di sini..."
+                            ></textarea>
+                            <button
+                                onclick="copyOCRText()"
+                                class="absolute right-2 top-2 text-xs text-indigo-600 hover:underline"
+                            >
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Search Section (Shadcn Card style) -->
             <div class="shadcn-card rounded-xl p-6 shadow-sm mb-8">
                 <form action="/search" method="GET" class="flex gap-3">
@@ -284,6 +342,41 @@
                         }
                     };
                 });
+            async function handleOCRUpload() {
+                const input = document.getElementById("ocrInput");
+                const resultArea = document.getElementById("ocrResult");
+
+                if (input.files.length === 0) return;
+
+                const formData = new FormData();
+                formData.append("image", input.files[0]);
+
+                resultArea.value = "Sedang memproses gambar... ⏳";
+
+                try {
+                    const response = await fetch("/upload", {
+                        method: "POST",
+                        body: formData,
+                    });
+                    const data = await response.json();
+
+                    if (data.status === "success") {
+                        resultArea.value = data.text;
+                    } else {
+                        resultArea.value = "Gagal mendeteksi teks.";
+                    }
+                } catch (error) {
+                    resultArea.value =
+                        "Error: Terjadi kesalahan koneksi ke server.";
+                }
+            }
+
+            function copyOCRText() {
+                const text = document.getElementById("ocrResult");
+                text.select();
+                document.execCommand("copy");
+                alert("Teks berhasil disalin!");
+            }
         </script>
     </body>
 </html>
